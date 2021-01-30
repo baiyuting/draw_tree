@@ -11,8 +11,13 @@
 
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
          style="width: 100%;height: 100%;position: absolute;top: 0;left: 0">
-        <line v-for="l in line" :x1="l.x1+'px'" :y1="l.y1+'px'" :x2="l.x2+'px'" :y2="l.y2+'px'"
-              style="stroke:rgb(255,0,0);stroke-width:2"/>
+<!--        绘制直线-->
+<!--        <line v-for="l in line" :x1="l.x1+'px'" :y1="l.y1+'px'" :x2="l.x2+'px'" :y2="l.y2+'px'"-->
+<!--              style="stroke:rgb(255,0,0);stroke-width:1"/>-->
+<!--        绘制折线-->
+        <polyline v-for="l in polylines" :points="l.points"
+                  style="fill:none;stroke:red;stroke-width:1"/>
+
     </svg>
 
     <div v-for="(d,index) in div"
@@ -91,7 +96,7 @@
     }
 
     /**
-     * 绘制线条
+     * 绘制直线
      * @param lines
      * @param div
      * @param name
@@ -115,6 +120,32 @@
         }
     }
 
+    /**
+     * 绘制折线
+     * @param polylines
+     * @param div
+     * @param name
+     */
+    function repaint_polyline(polylines, div, name) {
+        if (div[name].children.length === 0) {// 如果没有孩子节点，字节返回
+            return
+        }
+        for (let i = 0; i < div[name].children.length; i++) {
+            let child = div[name].children[i]
+            if (div[child].display === "none") { // 如果孩子节点是隐藏状态，不画线
+                continue
+            }
+            const x1 = div[name].left + div[name].width;
+            const y1 = div[name].top + div[name].height / 2;
+            const x2 = div[child].left;
+            const y2 = div[child].top + div[child].height / 2;
+            polylines.push({
+                points:[[x1,y1],[(x1+x2)/2, y1],[(x1+x2)/2,y2],[x2,y2]].join(" ")
+            })
+            repaint_polyline(polylines, div, child)
+        }
+    }
+
     var app4 = new Vue({
         el: '#app-4',
         methods: {
@@ -132,9 +163,9 @@
                 //2. 重新计算节点位置
                 repaint_div(div, "div0", null, 0, 0)
 
-                //3. 重新绘制线条
-                app4.$data['line'] = []
-                repaint_line(app4.$data['line'], div, "div0")
+                //3. 重新绘制折线
+                app4.$data['polylines']=[]
+                repaint_polyline(app4.$data['polylines'], div, "div0")
 
                 // 4. 图形 减号->加号 加号->减号
                 div[index].img_src = div[index].img_src === "sub.png" ? "add.png" : "sub.png"
@@ -256,9 +287,28 @@
                     "x2": "420",
                     "y2": "335"
                 }
+            ],
+            polylines:[
+                {
+                    points:""
+                }
             ]
         }
     })
+
+    /**
+     * 初始化 界面
+     */
+    function init() {
+        //重新计算节点位置
+        repaint_div(app4.$data['div'], "div0", null, 0, 0)
+        //重新绘制线条 使用折线
+        app4.$data['polylines']=[]
+        repaint_polyline(app4.$data['polylines'], app4.$data['div'], "div0")
+    }
+
+    init()
+
 </script>
 </body>
 </html>

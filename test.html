@@ -37,7 +37,8 @@
         while (queue.length !== 0) {
             name = queue.shift()
             div[name].display = display
-            queue = queue.concat(div[name].children)
+            if (div[name].img_src === "sub.png")// 只有当前节点是 展开情况 才遍历其子节点
+                queue = queue.concat(div[name].children)
         }
     }
 

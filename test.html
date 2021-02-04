@@ -36,14 +36,33 @@
      * @param div
      * @param display none 隐藏 "" 显示
      */
+    var delete_children = []
+    var delete_divs = {}
     function display_children(node_name, div, display) {
         var queue = []
+        if (display != "none"){// 如果是显示孩子结点
+            div[node_name].children=delete_children
+            for (const deleteDivsKey in delete_divs) {
+                div[deleteDivsKey]=delete_divs[deleteDivsKey]
+            }
+            delete_divs={}
+            delete_children=[]
+        }
+
         queue = queue.concat(div[node_name].children)
+        if (display === 'none'){// 如果是隐藏孩子结点
+            delete_children=div[node_name].children
+            div[node_name].children=[]
+        }
         while (queue.length !== 0) {
             name = queue.shift()
             div[name].display = display
             if (div[name].img_src === "sub.png")// 只有当前节点是 展开情况 才遍历其子节点
                 queue = queue.concat(div[name].children)
+            if (display === "none"){// 如果是隐藏结点
+                delete_divs[name]=div[name]
+                delete div[name]
+            }
         }
     }
 
